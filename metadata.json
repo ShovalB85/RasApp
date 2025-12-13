@@ -1,0 +1,7 @@
+{
+  "name": "RasApp: Military Logistics Management",
+  "description": "A comprehensive logistics management platform for military company sergeant majors (רס\"פ). Manage operational periods ('תעסוקה'), track inventory, assign equipment to personnel, and oversee tasks efficiently. Features AI-powered inventory scanning from images.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

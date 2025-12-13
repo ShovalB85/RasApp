@@ -1,0 +1,114 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Misgeret {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  personnel Soldier[]
+  taasukot  Taasuka[]
+}
+
+model Soldier {
+  id           String        @id @default(cuid())
+  name         String
+  personalId   String        @unique
+  passwordHash String?
+  role         String        @default("soldier") // admin, rassap, soldier
+  misgeretId   String
+  misgeret     Misgeret      @relation(fields: [misgeretId], references: [id], onDelete: Cascade)
+  assignedItems AssignedItem[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Taasuka {
+  id          String   @id @default(cuid())
+  name        String
+  misgeretId  String
+  misgeret    Misgeret @relation(fields: [misgeretId], references: [id], onDelete: Cascade)
+  inventory   InventoryItem[]
+  tasks       Task[]
+  teams       Team[]
+  personnelIds String[] // Array of soldier IDs
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model InventoryItem {
+  id              String   @id @default(cuid())
+  name            String
+  quantity        Int      @default(0) // For regular items and לל"צ quantity
+  hasSerialNumber Boolean  @default(false) // צל"ם - indicates if item requires serial number
+  serialNumbers   String[] // Array of serial numbers for this item (empty if לל"צ)
+  taasukaId       String
+  taasuka         Taasuka  @relation(fields: [taasukaId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model AssignedItem {
+  id              String   @id @default(cuid())
+  name            String
+  quantity        Int      @default(1)
+  serialNumber    String?  // מס"ד - Serial number for צל"ם items (null for לל"צ)
+  provider        String   // e.g., "Rassapiya", "Alog", "Mazi"
+  inventoryItemId String?  // Links to Taasuka inventory if not external
+  taasukaId       String?  // ID of the Taasuka this item was assigned from
+  soldierId       String
+  soldier         Soldier  @relation(fields: [soldierId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Task {
+  id              String   @id @default(cuid())
+  title           String
+  description     String
+  isComplete      Boolean  @default(false)
+  startDate       DateTime
+  isAllDay        Boolean  @default(false)
+  isRecurring     Boolean  @default(false)
+  recurrence      String?  // daily, weekly, monthly
+  assignedToType  String   // soldier, team
+  assignedToIds   String[] // Array of IDs
+  creatorId       String
+  notifyOnComplete String  @default("creator") // creator, all_rassaps
+  taasukaId       String
+  taasuka         Taasuka  @relation(fields: [taasukaId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String
+  taasukaId String
+  taasuka   Taasuka  @relation(fields: [taasukaId], references: [id], onDelete: Cascade)
+  memberIds String[] // Array of soldier IDs
+  leaderId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String   // The user who receives the notification
+  message   String
+  isRead    Boolean  @default(false)
+  taskId    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
