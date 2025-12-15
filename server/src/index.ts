@@ -15,7 +15,8 @@ dotenv.config();
 
 const app = express();
 const prisma = new PrismaClient();
-const PORT = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT ?? 3001);
+if (Number.isNaN(PORT)) throw new Error(`Invalid PORT: ${process.env.PORT}`);
 
 // Middleware - CORS must be before all routes
 const corsOrigins = process.env.CORS_ORIGINS;
