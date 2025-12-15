@@ -27,7 +27,7 @@ const corsOptions = {
       callback(null, true);
       return;
     }
-    const allowedOrigins = corsOrigins.split(',');
+    const allowedOrigins = corsOrigins.split(',').map(o => o.trim());
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
